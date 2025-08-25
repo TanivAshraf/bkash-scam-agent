@@ -3,7 +3,7 @@
 import os
 import requests
 from bs4 import BeautifulSoup
-import google.generativeai as genai
+import google.genergenerativeai as genai
 from supabase import create_client, Client
 import time
 
@@ -95,7 +95,7 @@ def analyze_url_content(url):
 
         model = genai.GenerativeModel('gemini-1.5-flash-latest')
         
-        # --- THE IMPROVED, MORE DETAILED PROMPT ---
+        # --- THIS IS THE ORIGINAL, MORE EFFECTIVE PROMPT ---
         prompt = f"""
         Analyze the following text from a website. The goal is to determine if this website is promoting or listing online betting/gambling sites that claim to use 'bKash'.
 
