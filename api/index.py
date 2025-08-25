@@ -1,4 +1,4 @@
-# ULTIMATE VERSION: This agent uses a multi-tool "waterfall" fallback system.
+# FINAL VERSION: This agent combines the multi-tool "waterfall" system with the best AI prompt.
 
 import os
 import requests
@@ -6,15 +6,13 @@ from bs4 import BeautifulSoup
 import google.generativeai as genai
 from supabase import create_client, Client
 import time
-import json
 
 # --- 1. CONFIGURATION ---
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
 SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 SCRAPER_API_KEY = os.environ.get('SCRAPER_API_KEY')
-SERPAPI_KEY = os.environ.get('SERPAPI_KEY')
-SCRAPINGBEE_API_KEY = os.environ.get('SCRAPINGBEE_API_KEY') # New Key
+SCRAPINGBEE_API_KEY = os.environ.get('SCRAPINGBEE_API_KEY')
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 genai.configure(api_key=GEMINI_API_KEY)
@@ -23,7 +21,6 @@ SEARCH_KEYWORDS = ["bKash Betting Sites"]
 
 # --- 2. MULTI-TOOL "WATERFALL" FUNCTIONS ---
 
-# --- Search Tools ---
 def search_with_serpapi(keyword):
     print("  -> Trying Search Tool: SerpApi...")
     params = {"api_key": SERPAPI_KEY, "engine": "google", "q": keyword, "num": "10"}
@@ -47,17 +44,14 @@ def search_with_scrapingbee(keyword):
     return None
 
 def get_search_results(keyword):
-    """Tries multiple search tools until one succeeds."""
     print(f"Searching for keyword: {keyword}")
     search_tools = [search_with_serpapi, search_with_scrapingbee]
     for tool in search_tools:
         results = tool(keyword)
-        if results:
-            return results
+        if results: return results
     print("  -> All search tools failed.")
     return []
 
-# --- Scraper Tools ---
 def scrape_with_scraperapi(url):
     print(f"  -> Trying Scraper: ScraperAPI...")
     params = {'api_key': SCRAPER_API_KEY, 'url': url, 'render': 'true'}
@@ -80,23 +74,19 @@ def scrape_with_direct_request(url):
     return response.content
 
 def analyze_url_content(url):
-    """Tries multiple scrapers to get page content, then analyzes it."""
     content = None
     scraper_tools = [scrape_with_scraperapi, scrape_with_scrapingbee, scrape_with_direct_request]
-    
     print(f"Analyzing URL: {url}")
     for tool in scraper_tools:
         try:
             content = tool(url)
             if content:
                 print("  -> Scrape SUCCESS.")
-                break # Stop trying once we have content
+                break
         except Exception as e:
             print(f"  -> Scraper failed: {e}")
-            
     if not content:
         return {"is_relevant": False, "analysis": "All scraping attempts failed."}
-
     try:
         soup = BeautifulSoup(content, 'html.parser')
         page_text = ' '.join(soup.stripped_strings)[:8000]
@@ -104,7 +94,22 @@ def analyze_url_content(url):
             return {"is_relevant": False, "analysis": "Could not extract text."}
 
         model = genai.GenerativeModel('gemini-1.5-flash-latest')
-        prompt = f"Analyze text. Is this website promoting online betting/gambling using 'bKash'? Format: Relevant: [Yes/No]\nAnalysis: [Summary]"
+        
+        # --- THE IMPROVED, MORE DETAILED PROMPT ---
+        prompt = f"""
+        Analyze the following text from a website. The goal is to determine if this website is promoting or listing online betting/gambling sites that claim to use 'bKash'.
+
+        Website Text: "{page_text}"
+
+        Based on the text, answer two questions:
+        1. Is this website directly promoting or listing betting/gambling sites related to bKash? Answer only with "Yes" or "No".
+        2. Provide a one-sentence summary explaining your reasoning.
+
+        Format your response as:
+        Relevant: [Yes/No]
+        Analysis: [Your one-sentence summary]
+        """
+        
         ai_response = model.generate_content(prompt)
         lines = ai_response.text.strip().split('\n')
         is_relevant = "yes" in lines[0].lower()
@@ -114,9 +119,8 @@ def analyze_url_content(url):
     except Exception as e:
         return {"is_relevant": False, "analysis": f"AI analysis failed: {str(e)}"}
 
-# --- 3. MAIN AGENT LOGIC ---
 def run_agent():
-    print("--- Starting AI Agent Run (ENGLISH ONLY via GitHub Actions) ---")
+    print("--- Starting AI Agent Run (ENGLISH ONLY // FINAL VERSION) ---")
     for keyword in SEARCH_KEYWORDS:
         sites = get_search_results(keyword)
         for site in sites:
