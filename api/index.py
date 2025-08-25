@@ -1,9 +1,9 @@
-# FINAL VERSION: This agent combines the multi-tool "waterfall" system with the best AI prompt.
+# FINAL VERSION (Corrected Typo): This agent combines the multi-tool "waterfall" system with the best AI prompt.
 
 import os
 import requests
 from bs4 import BeautifulSoup
-import google.genergenerativeai as genai
+import google.generativeai as genai  # <-- THIS LINE IS NOW CORRECTED
 from supabase import create_client, Client
 import time
 
@@ -95,7 +95,6 @@ def analyze_url_content(url):
 
         model = genai.GenerativeModel('gemini-1.5-flash-latest')
         
-        # --- THIS IS THE ORIGINAL, MORE EFFECTIVE PROMPT ---
         prompt = f"""
         Analyze the following text from a website. The goal is to determine if this website is promoting or listing online betting/gambling sites that claim to use 'bKash'.
 
