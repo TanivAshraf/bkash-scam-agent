@@ -1,4 +1,4 @@
-# This is a dedicated agent for the BANGLA keyword (TOP 5)
+# This agent runs inside GitHub Actions - analyzing the TOP 10 Bangla results.
 
 import os
 import requests
@@ -6,28 +6,25 @@ from bs4 import BeautifulSoup
 import google.generativeai as genai
 from supabase import create_client, Client
 import time
-from http.server import BaseHTTPRequestHandler
 
 # --- 1. CONFIGURATION ---
+# Reads secrets from the GitHub Actions environment
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
 SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 SCRAPER_API_KEY = os.environ.get('SCRAPER_API_KEY')
 SERPAPI_KEY = os.environ.get('SERPAPI_KEY')
 
-if SUPABASE_URL and SUPABASE_KEY:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
 
 SEARCH_KEYWORDS = ["বিকাশ বেটিং সাইট"]
 
 # --- 2. CORE FUNCTIONS ---
 def get_search_results_with_serpapi(keyword):
-    print(f"Searching for keyword with SerpApi: {keyword}")
-    # --- THIS IS THE ONLY CHANGE ---
-    # We now only ask for the TOP 5 results to stay within the time limit.
-    params = {"api_key": SERPAPI_KEY, "engine": "google", "q": keyword, "num": "5"}
+    print(f"Searching for keyword: {keyword}")
+    # We can go back to searching for 10 results now!
+    params = {"api_key": SERPAPI_KEY, "engine": "google", "q": keyword, "num": "10"}
     response = requests.get("https://serpapi.com/search.json", params=params)
     if response.status_code == 200:
         results = response.json().get('organic_results', [])
@@ -48,25 +45,23 @@ def analyze_url_content_with_scraperapi(url):
             soup = BeautifulSoup(response.content, 'html.parser')
             page_text = ' '.join(soup.stripped_strings)[:8000]
             if not page_text:
-                return {"is_relevant": False, "analysis": "Could not extract text from the page."}
+                return {"is_relevant": False, "analysis": "Could not extract text."}
             model = genai.GenerativeModel('gemini-1.5-flash-latest')
-            prompt = f"Analyze the following text from a website. The goal is to determine if this website is promoting or listing online betting/gambling sites that claim to use 'bKash'. Website Text: \"{page_text}\" Based on the text, answer two questions: 1. Is this website directly promoting or listing betting/gambling sites related to bKash? Answer only with \"Yes\" or \"No\". 2. Provide a one-sentence summary explaining your reasoning. Format your response as: Relevant: [Yes/No]\nAnalysis: [Your one-sentence summary]"
+            prompt = f"Analyze the following text. Is this website promoting or listing online betting/gambling sites that claim to use 'bKash'? Answer only with \"Yes\" or \"No\", followed by a new line and a one-sentence summary. Format: Relevant: [Yes/No]\nAnalysis: [Summary]"
             ai_response = model.generate_content(prompt)
             lines = ai_response.text.strip().split('\n')
             is_relevant = "yes" in lines[0].lower()
             analysis = lines[1].replace("Analysis: ", "").strip()
             print(f"  -> Gemini Analysis Successful. Relevant: {is_relevant}")
             return {"is_relevant": is_relevant, "analysis": analysis}
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             print(f"  -> Attempt {attempt + 1} failed: {e}")
-            if attempt < 2:
-                time.sleep(3)
-            else:
-                return {"is_relevant": False, "analysis": f"Failed after 3 retries: {str(e)}"}
-    return {"is_relevant": False, "analysis": "Analysis failed after all retries."}
+            if attempt < 2: time.sleep(3)
+            else: return {"is_relevant": False, "analysis": f"Failed after 3 retries: {str(e)}"}
+    return {"is_relevant": False, "analysis": "Analysis failed."}
 
 def run_agent():
-    print("--- Starting AI Agent Run (BANGLA ONLY) ---")
+    print("--- Starting AI Agent Run (BANGLA ONLY via GitHub Actions) ---")
     all_sites = []
     for keyword in SEARCH_KEYWORDS:
         sites = get_search_results_with_serpapi(keyword)
@@ -88,29 +83,18 @@ def run_agent():
         analysis_result = analyze_url_content_with_scraperapi(url)
         
         if analysis_result['is_relevant']:
-            print(f"  -> RELEVANT SITE FOUND! Saving to database...")
-            data_to_insert = {
-                'url': url,
-                'title': site.get('title'),
-                'source_keyword': site.get('source_keyword'),
-                'is_relevant': analysis_result['is_relevant'],
-                'gemini_analysis': analysis_result['analysis']
-            }
+            print(f"  -> RELEVANT SITE FOUND! Saving...")
+            data_to_insert = { 'url': url, 'title': site.get('title'), 'source_keyword': site.get('source_keyword'), 'is_relevant': analysis_result['is_relevant'], 'gemini_analysis': analysis_result['analysis'] }
             try:
                 supabase.table('suspicious_sites').insert(data_to_insert).execute()
-                print(f"  -> Successfully saved analysis for {url} to Supabase.\n")
+                print(f"  -> Successfully saved to Supabase.\n")
             except Exception as e:
-                print(f"  -> Failed to insert data into Supabase: {e}\n")
+                print(f"  -> Failed to insert into Supabase: {e}\n")
         else:
-            print(f"  -> Site is not relevant. Skipping database insert.\n")
+            print(f"  -> Site not relevant. Skipping.\n")
             
     print("--- AI Agent Run Finished ---")
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        run_agent()
-        self.send_response(200)
-        self.send_header('Content-type','text/plain')
-        self.end_headers()
-        self.wfile.write('Bangla Agent run completed.'.encode('utf-8'))
-        return
+# This line makes the script run when called directly
+if __name__ == "__main__":
+    run_agent()
