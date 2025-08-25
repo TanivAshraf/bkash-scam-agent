@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bKash Scam Site Tracker</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #e2136e; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f8f8f8; }
+        .status-true { color: red; font-weight: bold; }
+        .status-false { color: green; }
+        .new-find { background-color: #fffbe6 !important; }
+        .info { background-color: #eef; padding: 15px; border-left: 5px solid #e2136e; margin-bottom: 20px; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>bKash Scam Site Tracker</h1>
+    <div class="info">
+        <p><strong>Last Sync:</strong> <span id="last-sync">Loading...</span></p>
+        <p><strong>Next Scheduled Sync:</strong> <span id="next-sync">Loading...</span></p>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Relevant?</th>
+                <th>URL</th>
+                <th>AI Analysis</th>
+                <th>Date Found (Dhaka Time)</th>
+            </tr>
+        </thead>
+        <tbody id="results-table">
+            <tr><td colspan="4">Loading data from database...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Import the Supabase JS library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    // IMPORTANT: Paste your Supabase URL and Public Anon Key here
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL'; 
+    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // --- Main function to fetch and display data ---
+    async function loadData() {
+        const tableBody = document.getElementById('results-table');
+        
+        // Fetch data from the 'suspicious_sites' table, newest first
+        const { data, error } = await db
+            .from('suspicious_sites')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            tableBody.innerHTML = `<tr><td colspan="4">Error loading data: ${error.message}</td></tr>`;
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4">No sites found yet. The agent may not have run.</td></tr>';
+            return;
+        }
+
+        // Clear loading message
+        tableBody.innerHTML = '';
+
+        const now = new Date();
+        const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+
+        // --- Populate the table with data ---
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            
+            // Highlight if found in the last 24 hours
+            const foundDate = new Date(row.created_at);
+            if (foundDate > twentyFourHoursAgo) {
+                tr.classList.add('new-find');
+            }
+
+            const isRelevant = row.is_relevant;
+
+            tr.innerHTML = `
+                <td><span class="status-${isRelevant}">${isRelevant ? 'YES' : 'NO'}</span></td>
+                <td><a href="${row.url}" target="_blank">${row.url}</a></td>
+                <td>${row.gemini_analysis}</td>
+                <td>${foundDate.toLocaleString('en-GB', { timeZone: 'Asia/Dhaka' })}</td>
+            `;
+            tableBody.appendChild(tr);
+        });
+
+        // --- Update Sync Times ---
+        updateSyncTimes(data[0].created_at);
+    }
+
+    function updateSyncTimes(lastSyncTimestamp) {
+        const dhakaTimeZone = { timeZone: 'Asia/Dhaka' };
+
+        // Last Sync Time
+        const lastSyncDate = new Date(lastSyncTimestamp);
+        document.getElementById('last-sync').textContent = lastSyncDate.toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
+
+        // Next Sync Time Calculation
+        const nextSyncUTC = new Date();
+        nextSyncUTC.setUTCHours(5, 0, 0, 0); // Our cron runs at 05:00 UTC
+        if (new Date() > nextSyncUTC) {
+            // If current time is past 5 AM UTC, the next run is tomorrow
+            nextSyncUTC.setDate(nextSyncUTC.getDate() + 1);
+        }
+        document.getElementById('next-sync').textContent = nextSyncUTC.toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
+    }
+
+    // Load the data when the page loads
+    loadData();
+</script>
+
+</body>
+</html>
