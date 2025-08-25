@@ -1,4 +1,4 @@
-# This is a dedicated agent for the ENGLISH keyword
+# This is a dedicated agent for the ENGLISH keyword (TOP 5)
 
 import os
 import requests
@@ -20,13 +20,14 @@ if SUPABASE_URL and SUPABASE_KEY:
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-# ONLY the English keyword
 SEARCH_KEYWORDS = ["bKash Betting Sites"]
 
-# --- All other functions (get_search_results, analyze_url_content) are identical ---
+# --- 2. CORE FUNCTIONS ---
 def get_search_results_with_serpapi(keyword):
     print(f"Searching for keyword with SerpApi: {keyword}")
-    params = {"api_key": SERPAPI_KEY, "engine": "google", "q": keyword, "num": "10"}
+    # --- THIS IS THE ONLY CHANGE ---
+    # We now only ask for the TOP 5 results to stay within the time limit.
+    params = {"api_key": SERPAPI_KEY, "engine": "google", "q": keyword, "num": "5"}
     response = requests.get("https://serpapi.com/search.json", params=params)
     if response.status_code == 200:
         results = response.json().get('organic_results', [])
