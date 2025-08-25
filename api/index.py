@@ -107,7 +107,6 @@ def run_agent():
 # Vercel Handler
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        # Check if all required environment variables are set
         if not all([SUPABASE_URL, SUPABASE_KEY, GEMINI_API_KEY, SCRAPER_API_KEY, SERPAPI_KEY]):
             self.send_response(500)
             self.send_header('Content-type','text/plain')
