@@ -1,4 +1,4 @@
-# This is a dedicated agent for the BANGLA keyword
+# This is a dedicated agent for the BANGLA keyword (TOP 5)
 
 import os
 import requests
@@ -20,13 +20,14 @@ if SUPABASE_URL and SUPABASE_KEY:
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-# ONLY the Bangla keyword
 SEARCH_KEYWORDS = ["বিকাশ বেটিং সাইট"]
 
-# --- All other functions (get_search_results, analyze_url_content) are identical ---
+# --- 2. CORE FUNCTIONS ---
 def get_search_results_with_serpapi(keyword):
     print(f"Searching for keyword with SerpApi: {keyword}")
-    params = {"api_key": SERPAPI_KEY, "engine": "google", "q": keyword, "num": "10"}
+    # --- THIS IS THE ONLY CHANGE ---
+    # We now only ask for the TOP 5 results to stay within the time limit.
+    params = {"api_key": SERPAPI_KEY, "engine": "google", "q": keyword, "num": "5"}
     response = requests.get("https://serpapi.com/search.json", params=params)
     if response.status_code == 200:
         results = response.json().get('organic_results', [])
@@ -64,7 +65,6 @@ def analyze_url_content_with_scraperapi(url):
                 return {"is_relevant": False, "analysis": f"Failed after 3 retries: {str(e)}"}
     return {"is_relevant": False, "analysis": "Analysis failed after all retries."}
 
-
 def run_agent():
     print("--- Starting AI Agent Run (BANGLA ONLY) ---")
     all_sites = []
@@ -97,7 +97,7 @@ def run_agent():
                 'gemini_analysis': analysis_result['analysis']
             }
             try:
-                supabase.table('suspicious_sites').insert(_data_to_insert).execute()
+                supabase.table('suspicious_sites').insert(data_to_insert).execute()
                 print(f"  -> Successfully saved analysis for {url} to Supabase.\n")
             except Exception as e:
                 print(f"  -> Failed to insert data into Supabase: {e}\n")
