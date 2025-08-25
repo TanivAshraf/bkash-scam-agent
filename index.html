@@ -3,79 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>bKash Scam Site Tracker</title>
+    <title>bKash Potential Scam Site Dashboard</title>
     <style>
-        body { font-family: sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #e2136e; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 20px 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { color: #e2136e; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #f8f8f8; }
-        .status-true { color: red; font-weight: bold; }
-        .status-false { color: green; }
+        th, td { padding: 15px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #f8f8f8; font-weight: 600; }
         .new-find { background-color: #fffbe6 !important; }
-        .info { background-color: #eef; padding: 15px; border-left: 5px solid #e2136e; margin-bottom: 20px; }
-        a { color: #007bff; text-decoration: none; }
+        .info-box { display: flex; justify-content: space-between; background-color: #f8f8f8; padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .info-box div { flex-basis: 48%; }
+        .info-box p { margin: 5px 0; }
+        a { color: #007bff; text-decoration: none; font-weight: 500; }
         a:hover { text-decoration: underline; }
+        #site-counter { background-color: #e2136e; color: white; padding: 15px 20px; border-radius: 8px; display: inline-block; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>bKash Scam Site Tracker</h1>
-    <div class="info">
-        <p><strong>Last Sync:</strong> <span id="last-sync">Loading...</span></p>
-        <p><strong>Next Scheduled Sync:</strong> <span id="next-sync">Loading...</span></p>
+    <h1>bKash Potential Scam Site Dashboard</h1>
+    <p>This dashboard lists websites that have been automatically identified as potentially promoting scams using the bKash name.</p>
+    
+    <div id="site-counter">
+        <h2>Loading...</h2>
     </div>
+
     <table>
         <thead>
             <tr>
-                <th>Relevant?</th>
                 <th>URL</th>
-                <th>AI Analysis</th>
+                <th>AI Analysis / Key Finding</th>
                 <th>Date Found (Dhaka Time)</th>
             </tr>
         </thead>
         <tbody id="results-table">
-            <tr><td colspan="4">Loading data from database...</td></tr>
+            <tr><td colspan="3">Loading data from database...</td></tr>
         </tbody>
     </table>
+
+    <div class="info-box">
+        <div>
+            <h3>Sync Status</h3>
+            <p><strong>Last Sync:</strong> <span id="last-sync">N/A</span></p>
+            <p><strong>Next Scheduled Sync:</strong> <span id="next-sync">Loading...</span></p>
+        </div>
+        <div>
+            <h3>How it Works</h3>
+            <p>An AI agent scans the web daily. Only sites flagged as potential scams are listed here. New finds from the last 24 hours are highlighted in yellow.</p>
+        </div>
+    </div>
 </div>
 
-<!-- Import the Supabase JS library -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
     const tableBody = document.getElementById('results-table');
+    const counterElement = document.getElementById('site-counter');
 
-    // --- Main function that runs on page load ---
     async function initializeDashboard() {
         try {
-            // 1. Fetch the public keys from our secure config API
             const configResponse = await fetch('/api/config');
-            if (!configResponse.ok) {
-                throw new Error('Could not fetch server configuration.');
-            }
+            if (!configResponse.ok) throw new Error('Could not fetch server configuration.');
             const config = await configResponse.json();
-
-            // Check if the keys were successfully fetched
-            if (!config.supabaseUrl || !config.supabaseKey) {
-                throw new Error('Invalid server configuration received.');
-            }
-
-            // 2. Use the fetched keys to create the Supabase client
+            if (!config.supabaseUrl || !config.supabaseKey) throw new Error('Invalid server configuration received.');
+            
             const { createClient } = supabase;
             const db = createClient(config.supabaseUrl, config.supabaseKey);
-
-            // 3. Now, proceed to load data from the database
             await loadData(db);
-
         } catch (error) {
-            tableBody.innerHTML = `<tr><td colspan="4">Initialization Error: ${error.message}</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="3">Initialization Error: ${error.message}</td></tr>`;
         }
     }
 
-    // --- Function to fetch and display data ---
     async function loadData(db) {
         const { data, error } = await db
             .from('suspicious_sites')
@@ -83,17 +83,20 @@
             .order('created_at', { ascending: false });
 
         if (error) {
-            tableBody.innerHTML = `<tr><td colspan="4">Error loading data: ${error.message}</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="3">Error loading data: ${error.message}</td></tr>`;
             return;
         }
+
+        counterElement.innerHTML = `<h2>Found ${data.length} potential scam sites.</h2>`;
 
         if (!data || data.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="4">No sites found yet. The agent may not have run.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="3">Excellent news! No potential scam sites are currently in the database.</td></tr>';
+            document.getElementById('last-sync').textContent = 'No data available';
+            updateSyncTimes(null); // Still show next sync time
             return;
         }
 
-        tableBody.innerHTML = ''; // Clear loading message
-
+        tableBody.innerHTML = '';
         const now = new Date();
         const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
 
@@ -103,10 +106,7 @@
             if (foundDate > twentyFourHoursAgo) {
                 tr.classList.add('new-find');
             }
-            const isRelevant = row.is_relevant;
-
             tr.innerHTML = `
-                <td><span class="status-${isRelevant}">${isRelevant ? 'YES' : 'NO'}</span></td>
                 <td><a href="${row.url}" target="_blank" rel="noopener noreferrer">${row.url}</a></td>
                 <td>${row.gemini_analysis}</td>
                 <td>${foundDate.toLocaleString('en-GB', { timeZone: 'Asia/Dhaka' })}</td>
@@ -119,8 +119,11 @@
 
     function updateSyncTimes(lastSyncTimestamp) {
         const dhakaTimeZone = { timeZone: 'Asia/Dhaka' };
-        const lastSyncDate = new Date(lastSyncTimestamp);
-        document.getElementById('last-sync').textContent = lastSyncDate.toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
+        
+        if(lastSyncTimestamp) {
+            const lastSyncDate = new Date(lastSyncTimestamp);
+            document.getElementById('last-sync').textContent = lastSyncDate.toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
+        }
 
         const nextSyncUTC = new Date();
         nextSyncUTC.setUTCHours(5, 0, 0, 0);
@@ -130,6 +133,7 @@
         document.getElementById('next-sync').textContent = nextSyncUTC.toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
     }
 
-    // Run the main function when the page loads
     initializeDashboard();
 </script>
+</body>
+</html>
