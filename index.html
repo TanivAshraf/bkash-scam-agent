@@ -46,18 +46,37 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-    // IMPORTANT: Paste your Supabase URL and Public Anon Key here
-    const SUPABASE_URL = 'YOUR_SUPABASE_URL'; 
-    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const tableBody = document.getElementById('results-table');
 
-    const { createClient } = supabase;
-    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+    // --- Main function that runs on page load ---
+    async function initializeDashboard() {
+        try {
+            // 1. Fetch the public keys from our secure config API
+            const configResponse = await fetch('/api/config');
+            if (!configResponse.ok) {
+                throw new Error('Could not fetch server configuration.');
+            }
+            const config = await configResponse.json();
 
-    // --- Main function to fetch and display data ---
-    async function loadData() {
-        const tableBody = document.getElementById('results-table');
-        
-        // Fetch data from the 'suspicious_sites' table, newest first
+            // Check if the keys were successfully fetched
+            if (!config.supabaseUrl || !config.supabaseKey) {
+                throw new Error('Invalid server configuration received.');
+            }
+
+            // 2. Use the fetched keys to create the Supabase client
+            const { createClient } = supabase;
+            const db = createClient(config.supabaseUrl, config.supabaseKey);
+
+            // 3. Now, proceed to load data from the database
+            await loadData(db);
+
+        } catch (error) {
+            tableBody.innerHTML = `<tr><td colspan="4">Initialization Error: ${error.message}</td></tr>`;
+        }
+    }
+
+    // --- Function to fetch and display data ---
+    async function loadData(db) {
         const { data, error } = await db
             .from('suspicious_sites')
             .select('*')
@@ -73,57 +92,44 @@
             return;
         }
 
-        // Clear loading message
-        tableBody.innerHTML = '';
+        tableBody.innerHTML = ''; // Clear loading message
 
         const now = new Date();
         const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
 
-        // --- Populate the table with data ---
         data.forEach(row => {
             const tr = document.createElement('tr');
-            
-            // Highlight if found in the last 24 hours
             const foundDate = new Date(row.created_at);
             if (foundDate > twentyFourHoursAgo) {
                 tr.classList.add('new-find');
             }
-
             const isRelevant = row.is_relevant;
 
             tr.innerHTML = `
                 <td><span class="status-${isRelevant}">${isRelevant ? 'YES' : 'NO'}</span></td>
-                <td><a href="${row.url}" target="_blank">${row.url}</a></td>
+                <td><a href="${row.url}" target="_blank" rel="noopener noreferrer">${row.url}</a></td>
                 <td>${row.gemini_analysis}</td>
                 <td>${foundDate.toLocaleString('en-GB', { timeZone: 'Asia/Dhaka' })}</td>
             `;
             tableBody.appendChild(tr);
         });
-
-        // --- Update Sync Times ---
+        
         updateSyncTimes(data[0].created_at);
     }
 
     function updateSyncTimes(lastSyncTimestamp) {
         const dhakaTimeZone = { timeZone: 'Asia/Dhaka' };
-
-        // Last Sync Time
         const lastSyncDate = new Date(lastSyncTimestamp);
         document.getElementById('last-sync').textContent = lastSyncDate.toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
 
-        // Next Sync Time Calculation
         const nextSyncUTC = new Date();
-        nextSyncUTC.setUTCHours(5, 0, 0, 0); // Our cron runs at 05:00 UTC
+        nextSyncUTC.setUTCHours(5, 0, 0, 0);
         if (new Date() > nextSyncUTC) {
-            // If current time is past 5 AM UTC, the next run is tomorrow
             nextSyncUTC.setDate(nextSyncUTC.getDate() + 1);
         }
         document.getElementById('next-sync').textContent = nextSyncUTC.toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
     }
 
-    // Load the data when the page loads
-    loadData();
+    // Run the main function when the page loads
+    initializeDashboard();
 </script>
-
-</body>
-</html>
