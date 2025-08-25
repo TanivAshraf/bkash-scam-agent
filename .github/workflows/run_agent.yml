@@ -1,0 +1,57 @@
+name: Daily Scam Site Hunt
+
+on:
+  # This makes it run on a schedule (times are in UTC)
+  schedule:
+    - cron: '0 5 * * *'  # Runs the English agent at 5:00 UTC (11:00 AM Dhaka)
+    - cron: '15 5 * * *' # Runs the Bangla agent at 5:15 UTC (11:15 AM Dhaka)
+  
+  # This allows you to run it manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  run-english-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Python libraries
+        run: pip install -r requirements.txt
+
+      - name: Run the English agent
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+        run: python api/index.py
+
+  run-bangla-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Python libraries
+        run: pip install -r requirements.txt
+
+      - name: Run the Bangla agent
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+        run: python api/index-bangla.py
