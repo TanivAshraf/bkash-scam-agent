@@ -22,9 +22,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
           # --- THIS IS THE FIX ---
-          # We are now telling the Action to look for the secret named SERP_API_KEY
-          # and provide it to the python script.
-          SERP_API_KEY: ${{ secrets.SERP_API_KEY }}
+          # This now perfectly matches your secret name: SERPAPI_KEY
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
           SCRAPINGBEE_API_KEY: ${{ secrets.SCRAPINGBEE_API_KEY }}
         run: python api/index.py
 
@@ -43,6 +42,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
           # --- THIS IS THE FIX ---
-          SERP_API_KEY: ${{ secrets.SERP_API_KEY }}
+          # This now perfectly matches your secret name: SERPAPI_KEY
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
           SCRAPINGBEE_API_KEY: ${{ secrets.SCRAPINGBEE_API_KEY }}
         run: python api/index-bangla.py
