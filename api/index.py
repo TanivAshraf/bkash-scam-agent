@@ -1,3 +1,5 @@
+# This is a dedicated agent for the ENGLISH keyword
+
 import os
 import requests
 from bs4 import BeautifulSoup
@@ -18,10 +20,10 @@ if SUPABASE_URL and SUPABASE_KEY:
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-SEARCH_KEYWORDS = ["bKash Betting Sites", "বিকাশ বেটিং সাইট"]
+# ONLY the English keyword
+SEARCH_KEYWORDS = ["bKash Betting Sites"]
 
-# --- 2. CORE FUNCTIONS ---
-
+# --- All other functions (get_search_results, analyze_url_content) are identical ---
 def get_search_results_with_serpapi(keyword):
     print(f"Searching for keyword with SerpApi: {keyword}")
     params = {"api_key": SERPAPI_KEY, "engine": "google", "q": keyword, "num": "10"}
@@ -63,7 +65,7 @@ def analyze_url_content_with_scraperapi(url):
     return {"is_relevant": False, "analysis": "Analysis failed after all retries."}
 
 def run_agent():
-    print("--- Starting AI Agent Run (Smart Filtering Version) ---")
+    print("--- Starting AI Agent Run (ENGLISH ONLY) ---")
     all_sites = []
     for keyword in SEARCH_KEYWORDS:
         sites = get_search_results_with_serpapi(keyword)
@@ -84,8 +86,6 @@ def run_agent():
         
         analysis_result = analyze_url_content_with_scraperapi(url)
         
-        # --- THIS IS THE UPGRADE ---
-        # Only save to the database IF the site is relevant.
         if analysis_result['is_relevant']:
             print(f"  -> RELEVANT SITE FOUND! Saving to database...")
             data_to_insert = {
@@ -101,17 +101,15 @@ def run_agent():
             except Exception as e:
                 print(f"  -> Failed to insert data into Supabase: {e}\n")
         else:
-            # If not relevant, just log it and move on.
             print(f"  -> Site is not relevant. Skipping database insert.\n")
             
     print("--- AI Agent Run Finished ---")
 
-# Vercel Handler
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         run_agent()
         self.send_response(200)
         self.send_header('Content-type','text/plain')
         self.end_headers()
-        self.wfile.write('Agent run completed.'.encode('utf-8'))
+        self.wfile.write('English Agent run completed.'.encode('utf-8'))
         return
