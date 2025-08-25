@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - bKash Scam Site Intelligence Agent</title>
+    <style>
+        /* Modern Resets & Font */
+        :root {
+            --brand-color: #e2136e;
+            --light-gray: #f4f4f9;
+            --dark-text: #333;
+            --light-text: #666;
+            --border-color: #e0e0e0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-text);
+            margin: 0;
+            padding: 2rem;
+        }
+        /* Main Container */
+        .container {
+            max-width: 960px;
+            margin: auto;
+            background: white;
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+        /* Typography */
+        h1, h2, h3 {
+            color: var(--brand-color);
+            margin-top: 0;
+        }
+        h1 {
+            font-size: 2.5rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        h2 {
+            font-size: 1.8rem;
+            border-left: 4px solid var(--brand-color);
+            padding-left: 1rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+        }
+        p, li {
+            line-height: 1.7;
+            color: var(--light-text);
+            font-size: 1.1rem;
+        }
+        strong {
+            color: var(--dark-text);
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        /* Card Layout for Sections */
+        .card {
+            background-color: #fdfdfd;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        /* List Styling */
+        ol {
+            padding-left: 20px;
+        }
+        ol li {
+            margin-bottom: 1rem;
+        }
+        /* Back Link */
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        /* Footer */
+        footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 1rem;
+            color: #888;
+        }
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .container { padding: 1.5rem; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            p, li { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="/" class="back-link">← Back to Dashboard</a>
+    <h1>About This Project</h1>
+
+    <div class="card">
+        <h2>What is this system?</h2>
+        <p>This is a fully autonomous <strong>AI agent</strong> designed to act as a digital detective for bKash. Its sole purpose is to automatically patrol the internet, identify websites that are potentially misusing the bKash name to promote betting or gambling scams, and present these findings in a clean, focused, and easy-to-understand web dashboard.</p>
+        <p>It is a <strong>zero-maintenance system</strong>; once deployed, it runs entirely on its own without needing a dedicated computer or any manual intervention.</p>
+    </div>
+
+    <div class="card">
+        <h2>How It Works: A Daily Mission</h2>
+        <ol>
+            <li><strong>The Scheduled Wake-Up:</strong> Every morning, the system automatically wakes up and begins its mission.</li>
+            <li><strong>The Hunt (in Two Languages):</strong> The system runs two separate "micro-agents" to search Google using both English and Bangla keywords for maximum coverage.</li>
+            <li><strong>The Investigation:</strong> For each URL found, the agent visits the website and reads its complete text content, just like a human analyst would.</li>
+            <li><strong>The Verdict (The AI Brain):</strong> The extracted text is sent to a powerful AI language model (Google's Gemini) which has one critical task: decide if the website is a potential threat.</li>
+            <li><strong>The Report (Smart Filtering):</strong> If the AI determines a site is a potential scam, it's saved to a secure database. If a site is irrelevant or an error, the agent <strong>discards it</strong> to keep the final report clean and actionable.</li>
+            <li><strong>The Live Dashboard:</strong> The main dashboard provides a live, filtered view of only the potential scam sites the agent has found.</li>
+        </ol>
+    </div>
+
+    <div class="card">
+        <h2>Technology & Design</h2>
+        <p>The system was designed for <strong>reliability, focus, and zero maintenance</strong>. By using a "Serverless Architecture" with specialized tools for each step (searching, scraping, AI analysis), the agent is robust, scalable, and requires no ongoing management.</p>
+        <p>
+            <strong>Key Technologies:</strong> Vercel (Hosting & Scheduling), Supabase (Database), Google Gemini (AI Model), SerpApi & ScraperAPI (Web Data), Python (Agent Logic), and HTML/CSS/JavaScript (Dashboard).
+        </p>
+    </div>
+
+    <footer>
+        <p>This system was designed and developed by</p>
+        <h3>Taniv Ashraf</h3>
+        <a href="https://tanivashraf.com" target="_blank" rel="noopener noreferrer">tanivashraf.com</a>
+    </footer>
+</div>
+
+</body>
+</html>
