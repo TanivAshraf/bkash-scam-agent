@@ -1,9 +1,9 @@
-# FINAL VERSION (Corrected Typo): This agent combines the multi-tool "waterfall" system with the best AI prompt.
+# FINAL, CORRECTED VERSION. This code matches the YAML file and GitHub Secrets.
 
 import os
 import requests
 from bs4 import BeautifulSoup
-import google.generativeai as genai  # <-- THIS LINE IS NOW CORRECTED
+import google.generativeai as genai
 from supabase import create_client, Client
 import time
 
@@ -13,6 +13,8 @@ SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 SCRAPER_API_KEY = os.environ.get('SCRAPER_API_KEY')
 SCRAPINGBEE_API_KEY = os.environ.get('SCRAPINGBEE_API_KEY')
+# This line is now correct and matches your YAML file and Secrets.
+SERPAPI_KEY = os.environ.get('SERPAPI_KEY')
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 genai.configure(api_key=GEMINI_API_KEY)
