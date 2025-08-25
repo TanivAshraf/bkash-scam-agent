@@ -18,6 +18,7 @@
         a { color: #007bff; text-decoration: none; font-weight: 500; }
         a:hover { text-decoration: underline; }
         #site-counter { background-color: #e2136e; color: white; padding: 15px 20px; border-radius: 8px; display: inline-block; margin-top: 15px; }
+        footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.9em; color: #777; }
     </style>
 </head>
 <body>
@@ -54,6 +55,11 @@
             <p>An AI agent scans the web daily. Only sites flagged as potential scams are listed here. New finds from the last 24 hours are highlighted in yellow.</p>
         </div>
     </div>
+
+    <footer>
+        <p>Developed by <a href="https://tanivashraf.com" target="_blank" rel="noopener noreferrer">Taniv Ashraf</a>. | <a href="/about.html">About This Project</a></p>
+    </footer>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -136,4 +142,15 @@
     initializeDashboard();
 </script>
 </body>
-</html>
+</html>```
+5.  Scroll to the bottom and click **"Commit changes"**.
+
+---
+
+### **Final Step: All Done!**
+
+That's it. You have finished.
+
+Vercel will automatically see the changes you made on GitHub and will redeploy your website. In about 1-2 minutes, you can refresh your Vercel URL.
+
+You will see the new footer at the bottom of the dashboard. Clicking the "About This Project" link will take you to your new summary page.
