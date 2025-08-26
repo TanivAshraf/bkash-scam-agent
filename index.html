@@ -18,11 +18,7 @@
             color: var(--dark-text);
             margin: 0;
         }
-        /* Simple Password Prompt using JavaScript's prompt() */
-        .hidden {
-            display: none !important;
-        }
-        /* Dashboard Styles */
+        .hidden { display: none !important; }
         .container { padding: 1rem; }
         .container { max-width: 1200px; margin: auto; padding: 1.5rem 2rem; border-radius: 12px; }
         h1 { font-size: 2rem; color: var(--brand-color); border-bottom: 2px solid var(--border-color); padding-bottom: 1rem; margin: 0 0 1rem 0; }
@@ -77,29 +73,25 @@
     const resultsContainer = document.getElementById('results-container');
     const dateFilter = document.getElementById('date-filter');
     
-    // --- SIMPLE STATIC PASSWORD CHECK ---
     function checkPassword() {
         const correctPassword = "TanivbKash";
         const suppliedPassword = prompt("Please enter the password to view this dashboard:", "");
 
         if (suppliedPassword === correctPassword) {
-            // If the password is correct, show the dashboard and load the data
             dashboardContent.classList.remove('hidden');
             initializeDashboard();
         } else if (suppliedPassword != null) {
-            // If the password is wrong, show an alert and they can try again by refreshing
             alert("Incorrect password.");
             document.body.innerHTML = '<p style="padding:2rem; text-align:center;">Access Denied. Please refresh to try again.</p>';
         } else {
-            // If they click "Cancel"
-             document.body.innerHTML = '<p style="padding:2rem; text-align:center;">Access Canceled.</p>';
+            document.body.innerHTML = '<p style="padding:2rem; text-align:center;">Access Canceled.</p>';
         }
     }
 
     async function initializeDashboard() {
         try {
             const configResponse = await fetch('/api/config');
-            if (!configResponse.ok) throw new Error('Could not fetch server configuration.');
+            if (!configResponse.ok) throw new Error('Could not fetch server configuration. The /api/config.py file might be missing or broken.');
             const config = await configResponse.json();
             
             const { createClient } = supabase;
@@ -110,7 +102,6 @@
         }
     }
     
-    // The rest of the data loading functions are the same as the working version
     async function loadData(db) {
         const { data, error } = await db.from('suspicious_sites').select('*').order('created_at', { ascending: false });
         if (error) { resultsContainer.innerHTML = `<p>Error loading data: ${error.message}</p>`; return; }
@@ -129,6 +120,7 @@
         renderGroupedData(groupedData);
         updateSyncTimes(data[0].created_at);
     }
+    
     function populateDateFilter(groupedData) {
         while (dateFilter.options.length > 1) { dateFilter.remove(1); }
         Object.keys(groupedData).forEach(date => {
@@ -138,6 +130,7 @@
             dateFilter.appendChild(option);
         });
     }
+
     function renderGroupedData(groupedData) {
         resultsContainer.innerHTML = '';
         const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
@@ -159,6 +152,7 @@
             groupDiv.appendChild(table);
         }
     }
+    
     function updateSyncTimes(lastSyncTimestamp) {
         const dhakaTimeZone = { timeZone: 'Asia/Dhaka' };
         if(lastSyncTimestamp) {
@@ -169,6 +163,7 @@
         if (new Date() > nextSyncUTC) nextSyncUTC.setDate(nextSyncUTC.getDate() + 1);
         document.getElementById('next-sync').textContent = nextSyncUTC.toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
     }
+
     dateFilter.addEventListener('change', (e) => {
         const selectedDate = e.target.value;
         document.querySelectorAll('.date-group').forEach(group => {
@@ -177,7 +172,6 @@
     });
 
     // --- START THE APP ---
-    // Instead of initializing directly, we first check the password.
     checkPassword();
 </script>
 </body>
