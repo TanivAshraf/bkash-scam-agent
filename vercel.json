@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "protection": {
+    "password": "@vercel-protection-password"
+  },
+  "crons": [
+    {
+      "path": "/api/index",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/index-bangla",
+      "schedule": "15 5 * * *"
+    }
+  ]
+}
