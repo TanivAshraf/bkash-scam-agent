@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>bKash Potential Scam Site Dashboard</title>
+    <title>Potential Scam Site Dashboard</title>
     <style>
         :root {
             --brand-color: #e2136e;
@@ -140,7 +140,6 @@
         }
     }
     
-    // The data loading functions remain the same
     async function loadData(db) {
         const { data, error } = await db
             .from('suspicious_sites')
@@ -195,7 +194,10 @@
             table.innerHTML = '<thead><tr><th>URL</th><th>AI Analysis / Key Finding</th></tr></thead>';
             const tbody = document.createElement('tbody');
             
-            groupedData[date][date].forEach(row => {
+            // --- THIS IS THE FIX ---
+            // The line below was incorrect. It has been corrected from groupedData[date][date]
+            // to just groupedData[date].
+            groupedData[date].forEach(row => {
                 const tr = document.createElement('tr');
                 if (new Date(row.created_at) > twentyFourHoursAgo) tr.classList.add('new-find');
                 tr.innerHTML = `
