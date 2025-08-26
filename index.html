@@ -19,46 +19,29 @@
             margin: 0;
         }
         #password-overlay {
-            position: fixed;
-            top: 0; left: 0;
+            position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             z-index: 1000;
         }
         #password-box {
-            background: white;
-            padding: 2rem 3rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            text-align: center;
+            background: white; padding: 2rem 3rem; border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center;
         }
         #password-box h2 { margin-top: 0; color: var(--brand-color); }
         #password-box input {
-            padding: 0.8rem;
-            font-size: 1.1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            width: 250px;
+            padding: 0.8rem; font-size: 1.1rem; border: 1px solid var(--border-color);
+            border-radius: 6px; width: 250px;
         }
         #password-box button {
-            background-color: var(--brand-color);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            font-size: 1.1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 1rem;
+            background-color: var(--brand-color); color: white; border: none;
+            padding: 0.8rem 1.5rem; font-size: 1.1rem; border-radius: 6px;
+            cursor: pointer; margin-top: 1rem;
         }
         #password-error { color: red; margin-top: 1rem; height: 1em; }
         .hidden { display: none !important; }
-
-        /* Dashboard Styles */
         .container { padding: 1rem; }
-        /* Add other dashboard styles from the previous version here... */
         .container { max-width: 1200px; margin: auto; padding: 1.5rem 2rem; border-radius: 12px; }
         h1 { font-size: 2rem; color: var(--brand-color); border-bottom: 2px solid var(--border-color); padding-bottom: 1rem; margin: 0 0 1rem 0; }
         .info-header { display: flex; flex-wrap: wrap; gap: 1.5rem; background-color: #f8f8f8; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
@@ -121,6 +104,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    // --- ELEMENT SELECTORS ---
     const passwordOverlay = document.getElementById('password-overlay');
     const passwordForm = document.getElementById('password-form');
     const passwordInput = document.getElementById('password-input');
@@ -128,9 +112,9 @@
     const dashboardContent = document.getElementById('dashboard-content');
     const resultsContainer = document.getElementById('results-container');
     const dateFilter = document.getElementById('date-filter');
-
     let db; // To hold the supabase client
 
+    // --- MAIN APP INITIALIZATION ---
     async function initializeApp() {
         try {
             const configResponse = await fetch('/api/config');
@@ -150,20 +134,17 @@
         }
     }
     
+    // --- EVENT LISTENERS ---
     passwordForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         passwordError.textContent = 'Checking...';
-        const password = passwordInput.value;
-        
         try {
             const authResponse = await fetch('/api/auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: password })
+                body: JSON.stringify({ password: passwordInput.value })
             });
-
             const result = await authResponse.json();
-
             if (result.authorized) {
                 passwordOverlay.classList.add('hidden');
                 showDashboard();
@@ -176,32 +157,52 @@
         }
     });
 
+    dateFilter.addEventListener('change', (e) => {
+        const selectedDate = e.target.value;
+        document.querySelectorAll('.date-group').forEach(group => {
+            group.style.display = (selectedDate === 'all' || group.dataset.date === selectedDate) ? 'block' : 'none';
+        });
+    });
+
+    // --- HELPER FUNCTIONS ---
     function showDashboard() {
         dashboardContent.classList.remove('hidden');
         loadData();
     }
     
-    // All the data loading and rendering functions are the same as before
     async function loadData() {
-        // ... (rest of the data loading and rendering logic)
-    }
+        const { data, error } = await db.from('suspicious_sites').select('*').order('created_at', { ascending: false });
 
-    initializeApp();
+        if (error) {
+            resultsContainer.innerHTML = `<p>Error loading data: ${error.message}</p>`;
+            return;
+        }
+        
+        if (!data || data.length === 0) {
+            resultsContainer.innerHTML = '<p>Excellent news! No potential scam sites are currently in the database.</p>';
+            document.getElementById('last-sync').textContent = 'No data available';
+            updateSyncTimes(null);
+            return;
+        }
 
-    // The data loading, grouping, and rendering functions are placed here
-    // for completeness. They are the same as the previous version.
-
-    function groupDataByDate(data) {
-        return data.reduce((acc, row) => {
+        const groupedData = data.reduce((acc, row) => {
             const date = new Date(row.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Asia/Dhaka' });
             if (!acc[date]) acc[date] = [];
             acc[date].push(row);
             return acc;
         }, {});
-    }
 
+        populateDateFilter(groupedData);
+        renderGroupedData(groupedData);
+        updateSyncTimes(data[0].created_at);
+    }
+    
     function populateDateFilter(groupedData) {
         const dates = Object.keys(groupedData);
+        // Clear previous options except the first one
+        while (dateFilter.options.length > 1) {
+            dateFilter.remove(1);
+        }
         dates.forEach(date => {
             const option = document.createElement('option');
             option.value = date;
@@ -212,21 +213,17 @@
 
     function renderGroupedData(groupedData) {
         resultsContainer.innerHTML = '';
-        const now = new Date();
-        const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+        const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
         
         for (const date in groupedData) {
             const groupDiv = document.createElement('div');
-            groupDiv.classList.add('date-group');
+            groupDiv.className = 'date-group';
             groupDiv.dataset.date = date;
-
-            const heading = document.createElement('h2');
-            heading.textContent = date;
-            groupDiv.appendChild(heading);
+            groupDiv.innerHTML = `<h2>${date}</h2>`;
 
             const table = document.createElement('table');
-            const tbody = document.createElement('tbody');
             table.innerHTML = '<thead><tr><th>URL</th><th>AI Analysis / Key Finding</th></tr></thead>';
+            const tbody = document.createElement('tbody');
             
             groupedData[date].forEach(row => {
                 const tr = document.createElement('tr');
@@ -246,35 +243,10 @@
         }
     }
 
-    async function loadData() {
-        const { data, error } = await db
-            .from('suspicious_sites')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            resultsContainer.innerHTML = `<p>Error loading data: ${error.message}</p>`;
-            return;
-        }
-        
-        if (!data || data.length === 0) {
-            resultsContainer.innerHTML = '<p>Excellent news! No potential scam sites are currently in the database.</p>';
-            document.getElementById('last-sync').textContent = 'No data available';
-            updateSyncTimes(null);
-            return;
-        }
-
-        const groupedData = groupDataByDate(data);
-        populateDateFilter(groupedData);
-        renderGroupedData(groupedData);
-        updateSyncTimes(data[0].created_at);
-    }
-
     function updateSyncTimes(lastSyncTimestamp) {
         const dhakaTimeZone = { timeZone: 'Asia/Dhaka' };
         if(lastSyncTimestamp) {
-            const lastSyncDate = new Date(lastSyncTimestamp);
-            document.getElementById('last-sync').textContent = lastSyncDate.toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
+            document.getElementById('last-sync').textContent = new Date(lastSyncTimestamp).toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
         }
         const nextSyncUTC = new Date();
         nextSyncUTC.setUTCHours(5, 0, 0, 0);
@@ -284,17 +256,8 @@
         document.getElementById('next-sync').textContent = nextSyncUTC.toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
     }
 
-    dateFilter.addEventListener('change', (e) => {
-        const selectedDate = e.target.value;
-        const allGroups = document.querySelectorAll('.date-group');
-        allGroups.forEach(group => {
-            if (selectedDate === 'all' || group.dataset.date === selectedDate) {
-                group.style.display = 'block';
-            } else {
-                group.style.display = 'none';
-            }
-        });
-    });
+    // --- START THE APP ---
+    initializeApp();
 </script>
 </body>
 </html>
