@@ -3,96 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potential Scam Site Dashboard</title>
+    <title>bKash Potential Scam Site Dashboard</title>
     <style>
-        :root {
-            --brand-color: #e2136e;
-            --light-gray: #f4f4f9;
-            --dark-text: #333;
-            --light-text: #666;
-            --border-color: #e0e0e0;
-            --highlight-bg: #fffbe6;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--light-gray);
-            color: var(--dark-text);
-            margin: 0;
-            padding: 1rem;
-        }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            background: white;
-            padding: 1.5rem 2rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-        }
-        h1 {
-            font-size: 2rem;
-            color: var(--brand-color);
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 1rem;
-            margin: 0 0 1rem 0;
-        }
-        .info-header {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            background-color: #f8f8f8;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-        }
+        :root { --brand-color: #e2136e; --light-gray: #f4f4f9; --dark-text: #333; --light-text: #666; --border-color: #e0e0e0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: var(--light-gray); color: var(--dark-text); margin: 0; }
+        #password-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        #password-box { background: white; padding: 2rem 3rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; }
+        #password-box h2 { margin-top: 0; color: var(--brand-color); }
+        #password-box input { padding: 0.8rem; font-size: 1.1rem; border: 1px solid var(--border-color); border-radius: 6px; width: 250px; }
+        #password-box button { background-color: var(--brand-color); color: white; border: none; padding: 0.8rem 1.5rem; font-size: 1.1rem; border-radius: 6px; cursor: pointer; margin-top: 1rem; }
+        #password-error { color: red; margin-top: 1rem; height: 1em; }
+        .hidden { display: none !important; }
+        .container { padding: 1rem; }
+        .container { max-width: 1200px; margin: auto; padding: 1.5rem 2rem; border-radius: 12px; }
+        h1 { font-size: 2rem; color: var(--brand-color); border-bottom: 2px solid var(--border-color); padding-bottom: 1rem; margin: 0 0 1rem 0; }
+        .info-header { display: flex; flex-wrap: wrap; gap: 1.5rem; background-color: #f8f8f8; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
         .info-box { flex: 1; min-width: 280px; }
         .info-box h3 { margin-top: 0; color: var(--brand-color); }
         .info-box p { margin: 5px 0; color: var(--light-text); }
         .filter-section { margin-bottom: 2rem; }
-        .filter-section label { font-weight: bold; margin-right: 10px; }
-        .filter-section select {
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            font-size: 1rem;
-        }
-        .date-group h2 {
-            font-size: 1.5rem;
-            color: var(--brand-color);
-            margin-top: 2.5rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            text-align: left;
-            word-break: break-word;
-        }
+        label { font-weight: bold; margin-right: 10px; }
+        select { padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 1rem; }
+        .date-group h2 { font-size: 1.5rem; color: var(--brand-color); margin-top: 2.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem; border-bottom: 1px solid var(--border-color); text-align: left; word-break: break-word; }
         th { background-color: #f8f8f8; font-weight: 600; }
-        .new-find td { background-color: var(--highlight-bg) !important; }
+        .new-find td { background-color: #fffbe6 !important; }
         a { color: #007bff; text-decoration: none; font-weight: 500; }
         a:hover { text-decoration: underline; }
         footer { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #eee; text-align: center; font-size: 0.9em; color: #777; }
-        
-        @media (max-width: 768px) {
-            body { padding: 0.5rem; }
-            .container { padding: 1rem; }
-            h1 { font-size: 1.5rem; }
-            .info-header { flex-direction: column; }
-            th, td { padding: 0.75rem; }
-        }
+        @media (max-width: 768px) { body { padding: 0.5rem; } .container { padding: 1rem; } h1 { font-size: 1.5rem; } .info-header { flex-direction: column; } th, td { padding: 0.75rem; } }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div id="password-overlay" class="hidden">
+    <div id="password-box">
+        <h2>Access Required</h2>
+        <p>Please enter the password to view the dashboard.</p>
+        <form id="password-form">
+            <input type="password" id="password-input" placeholder="Password..." autofocus>
+            <br>
+            <button type="submit">Unlock</button>
+        </form>
+        <p id="password-error"></p>
+    </div>
+</div>
+
+<div id="dashboard-content" class="container hidden">
     <h1>bKash Potential Scam Site Dashboard</h1>
-    
     <div class="info-header">
         <div class="info-box">
             <h3>Sync Status</h3>
@@ -104,18 +63,13 @@
             <p>An AI agent scans the web daily. Only sites flagged by the AI as potential threats are listed here. New finds from the last 24 hours are highlighted in yellow.</p>
         </div>
     </div>
-
     <div class="filter-section">
         <label for="date-filter">Filter by Date:</label>
         <select id="date-filter">
             <option value="all">Show All Dates</option>
         </select>
     </div>
-
-    <div id="results-container">
-        <p>Loading data from database...</p>
-    </div>
-
+    <div id="results-container"><p>Loading data from database...</p></div>
     <footer>
         <p>Developed by <a href="https://tanivashraf.com" target="_blank" rel="noopener noreferrer">Taniv Ashraf</a>. | <a href="/about.html">About This Project</a></p>
     </footer>
@@ -123,28 +77,70 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    const passwordOverlay = document.getElementById('password-overlay');
+    const passwordForm = document.getElementById('password-form');
+    const passwordInput = document.getElementById('password-input');
+    const passwordError = document.getElementById('password-error');
+    const dashboardContent = document.getElementById('dashboard-content');
     const resultsContainer = document.getElementById('results-container');
     const dateFilter = document.getElementById('date-filter');
+    let db;
 
-    async function initializeDashboard() {
+    async function initializeApp() {
         try {
             const configResponse = await fetch('/api/config');
             if (!configResponse.ok) throw new Error('Could not fetch server configuration.');
             const config = await configResponse.json();
             
             const { createClient } = supabase;
-            const db = createClient(config.supabaseUrl, config.supabaseKey);
-            await loadData(db);
+            db = createClient(config.supabaseUrl, config.supabaseKey);
+
+            if (config.protectionEnabled) {
+                passwordOverlay.classList.remove('hidden');
+            } else {
+                showDashboard();
+            }
         } catch (error) {
-            resultsContainer.innerHTML = `<p>Initialization Error: ${error.message}</p>`;
+            document.body.innerHTML = `<p style="padding: 2rem;">Initialization Error: ${error.message}</p>`;
         }
     }
     
-    async function loadData(db) {
-        const { data, error } = await db
-            .from('suspicious_sites')
-            .select('*')
-            .order('created_at', { ascending: false });
+    passwordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        passwordError.textContent = 'Checking...';
+        try {
+            const authResponse = await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: passwordInput.value })
+            });
+            const result = await authResponse.json();
+            if (result.authorized) {
+                passwordOverlay.classList.add('hidden');
+                showDashboard();
+            } else {
+                passwordError.textContent = 'Incorrect password. Please try again.';
+                passwordInput.value = '';
+            }
+        } catch (error) {
+            passwordError.textContent = 'An error occurred. Please try again later.';
+        }
+    });
+
+    dateFilter.addEventListener('change', (e) => {
+        const selectedDate = e.target.value;
+        document.querySelectorAll('.date-group').forEach(group => {
+            group.style.display = (selectedDate === 'all' || group.dataset.date === selectedDate) ? 'block' : 'none';
+        });
+    });
+
+    function showDashboard() {
+        dashboardContent.classList.remove('hidden');
+        loadData();
+    }
+    
+    async function loadData() {
+        const { data, error } = await db.from('suspicious_sites').select('*').order('created_at', { ascending: false });
 
         if (error) {
             resultsContainer.innerHTML = `<p>Error loading data: ${error.message}</p>`;
@@ -194,9 +190,6 @@
             table.innerHTML = '<thead><tr><th>URL</th><th>AI Analysis / Key Finding</th></tr></thead>';
             const tbody = document.createElement('tbody');
             
-            // --- THIS IS THE FIX ---
-            // The line below was incorrect. It has been corrected from groupedData[date][date]
-            // to just groupedData[date].
             groupedData[date].forEach(row => {
                 const tr = document.createElement('tr');
                 if (new Date(row.created_at) > twentyFourHoursAgo) tr.classList.add('new-find');
@@ -209,7 +202,6 @@
             
             table.appendChild(tbody);
             groupDiv.appendChild(table);
-            resultsContainer.appendChild(groupDiv);
         }
     }
     
@@ -224,14 +216,7 @@
         document.getElementById('next-sync').textContent = nextSyncUTC.toLocaleString('en-US', dhakaTimeZone) + ' (Dhaka Time)';
     }
 
-    dateFilter.addEventListener('change', (e) => {
-        const selectedDate = e.target.value;
-        document.querySelectorAll('.date-group').forEach(group => {
-            group.style.display = (selectedDate === 'all' || group.dataset.date === selectedDate) ? 'block' : 'none';
-        });
-    });
-
-    initializeDashboard();
+    initializeApp();
 </script>
 </body>
 </html>
