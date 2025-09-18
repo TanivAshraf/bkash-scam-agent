@@ -19,7 +19,11 @@ SERPAPI_KEY = os.environ.get('SERPAPI_KEY')
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 genai.configure(api_key=GEMINI_API_KEY)
 
-SEARCH_KEYWORDS = ["বিকাশ বেটিং সাইট"]
+SEARCH_KEYWORDS = ["বিকাশ বেটিং সাইট",
+    "বিকাশ জুয়া সাইট",
+    "অনলাইন বেটিং বিকাশ পেমেন্ট",
+    "বিকাশ ক্যাসিনো",
+    "বিকাশ দিয়ে বেটিং"]
 
 # --- 2. MULTI-TOOL "WATERFALL" FUNCTIONS ---
 
